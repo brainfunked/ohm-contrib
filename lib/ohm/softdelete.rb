@@ -43,18 +43,18 @@ module Ohm
     end
 
     def delete
-      db.multi do
-        model.all.key.srem(id)
-        model.deleted.key.sadd(id)
-        set :deleted, DELETED_FLAG
+      db.multi do |mdb|
+        mdb.srem(id, model.all.key)
+        mdb.sadd(id, model.deleted.key)
+        set :deleted, DELETED_FLAG, mdb
       end
     end
 
     def restore
-      db.multi do
-        model.all.key.sadd(id)
-        model.deleted.key.srem(id)
-        set :deleted, nil
+      db.multi do |mdb|
+        mdb.sadd(id, model.all.key)
+        mdb.srem(id, model.deleted.key)
+        set :deleted, nil, mdb
       end
     end
 
